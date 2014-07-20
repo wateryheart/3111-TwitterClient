@@ -1,0 +1,52 @@
+package chris.test.hk.ust.cse.TwitterClient.Views.Home;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import hk.ust.cse.TwitterClient.Views.Home.MiniProfile;
+
+import martin.test.hk.ust.cse.TwitterClient.Mocks.MockUser;
+import martin.test.utils.TestUtils;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseTrackListener;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Shell;
+import org.junit.Test;
+
+
+public class MiniProfileTest {
+  @Test(timeout=10000)
+  public void testConstructor() throws Throwable {
+    Display display = new Display();
+    Shell shell = new Shell(display);
+    
+    MockUser user = new MockUser("FakeUser", "FakeScreenName", true, "Fake Description");
+    MiniProfile mp = new MiniProfile( shell, user, 1200, 700 );
+    assertNotNull(mp);
+    
+    assertEquals( user, mp.getUser() );
+    
+    MouseTrackListener mouseTrackListener = TestUtils.getListener(mp, SWT.MouseHover, "MiniProfile");
+	   if( mouseTrackListener == null )
+	    	fail();
+	   
+	   Event event;
+	   MouseEvent e;
+	   
+	    //invoke	    
+	    event = new Event();
+	    event.widget = mp;
+	    e = new MouseEvent(event);
+	    
+	    mouseTrackListener.mouseHover(e);
+	    mouseTrackListener.mouseEnter(e);
+	    mouseTrackListener.mouseExit(e);
+    shell.dispose();
+    display.dispose();
+  }
+
+}

@@ -1,0 +1,56 @@
+package chris.test.hk.ust.cse.TwitterClient.Views;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import hk.ust.cse.TwitterClient.Resources.Resources;
+import hk.ust.cse.TwitterClient.Views.ControlBarItem;
+
+import martin.test.utils.TestUtils;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseTrackListener;
+import org.eclipse.swt.internal.SWTEventListener;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TypedListener;
+import org.junit.Test;
+
+
+public class ControlBarItemTest {
+	
+	@Test(timeout=10000)
+	public void getTitleTest() throws Throwable {
+	    Display display = new Display();
+	    Shell shell = new Shell(display);
+	    
+	    ControlBarItem item;
+		    
+	   item = new ControlBarItem(shell, "", Resources.ME_IMG, Resources.ME_HOVER_IMG);
+	   assertEquals("",item.getTitle());
+		       
+	   item = new ControlBarItem(shell, "Home", Resources.HOME_IMG, Resources.HOME_HOVER_IMG);
+	   assertEquals("Home",item.getTitle());
+	
+	   
+	   MouseTrackListener mouseTrackListener = TestUtils.getListener(item, SWT.MouseHover, "ControlBarItem");
+	   if( mouseTrackListener == null )
+	    	fail();
+	   
+	    //invoke
+	    
+	    Event event = new Event();
+	    event.widget = item;
+	    MouseEvent e = new MouseEvent(event);
+	    
+	    mouseTrackListener.mouseEnter(e);
+	    mouseTrackListener.mouseExit(e);
+	    mouseTrackListener.mouseHover(e);
+	    
+	    shell.dispose();
+	    display.dispose();
+	}
+
+}

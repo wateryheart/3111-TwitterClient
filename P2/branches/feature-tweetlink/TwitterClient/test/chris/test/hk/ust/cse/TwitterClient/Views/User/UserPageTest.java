@@ -1,0 +1,213 @@
+package chris.test.hk.ust.cse.TwitterClient.Views.User;
+
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import hk.ust.cse.TwitterClient.Controls.TwitterControl;
+import hk.ust.cse.TwitterClient.Views.NumberBarItem;
+import hk.ust.cse.TwitterClient.Views.User.UserMenu;
+import hk.ust.cse.TwitterClient.Views.User.UserMenuItem;
+import hk.ust.cse.TwitterClient.Views.User.UserPage;
+
+import martin.test.hk.ust.cse.TwitterClient.Mocks.ConcreteMockAsyncTwitter;
+import martin.test.hk.ust.cse.TwitterClient.Mocks.MockPagableResponseList;
+import martin.test.hk.ust.cse.TwitterClient.Mocks.MockTwitter;
+import martin.test.hk.ust.cse.TwitterClient.Mocks.MockUser;
+import martin.test.utils.TestUtils;
+
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Shell;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Test;
+
+import twitter4j.AsyncTwitter;
+import twitter4j.PagableResponseList;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.User;
+
+public class UserPageTest {
+
+  @Test(timeout=10000)
+  public void testConstructor() throws Throwable {
+
+    Display display = new Display();
+    Shell shell = new Shell(display);
+
+    try{
+    	UserPage userPage;
+    	// ----- Mock things initialize ------
+    	MockUser user = new MockUser("FakeUser", "FakeScreenName", true, "Fake Description");
+ 	    user.setProfileBackgroundColor("1A1B1F");
+ 	    user.setProfileBackgroundImageURL("");
+ 	    
+    	Twitter twitter = new MockTwitter(user);    	
+    	AsyncTwitter asyncTwitter = new ConcreteMockAsyncTwitter();    
+    	TwitterControl.setupTwitter(twitter, asyncTwitter);
+    
+    	
+	    userPage = new UserPage(shell, user,"", 10, 1, 10, 10, 10, 10, null, null);
+	    assertNotNull(userPage);	    
+	    
+	    user.setProfileBackgroundImageURL(TestUtils.getResourceURL("background"));
+	    userPage = new UserPage(shell, user,"", 10, 1, 10, 10, 10, 10, null, null);
+	    assertNotNull(userPage);	    
+	    //test public functions
+	    assertNotNull( userPage.getUser() );
+	    assertEquals( user.getScreenName(), userPage.getUser().getScreenName() );
+	   	   
+	    List<Status> tweets = new ArrayList<Status>();
+	    //test public functions
+	    userPage.showTweetsList(tweets);
+	
+	    PagableResponseList<User> userList = new MockPagableResponseList<User>(-1);
+	    userList.add(user);
+	    //test public functions
+	    userPage.showFollowingList(userList);
+	    userPage = new UserPage(shell, user,"", 10, 1, 1000, 1000, 1000, 1000, null, null);
+	    assertNotNull(userPage);
+	    userPage.showFollowersList(userList);
+	     
+	    
+	    // test event ------------ >
+	    
+	    Event event;
+	    MouseEvent e;
+	    Class<?> userPageCls = UserPage.class;
+	    Class<?> userMenuCls = UserMenu.class;
+	    	    
+	    // ------------------------------------------------------------------------------------------	    
+	    event = new Event();
+	    event.widget = shell;
+	    e = new MouseEvent(event);
+
+	    Field m_leftMenu_Field =  userPageCls.getDeclaredField("m_leftMenu");
+	    assertNotNull(m_leftMenu_Field);
+	    m_leftMenu_Field.setAccessible(true);
+	    UserMenu m_leftMenu =(UserMenu) m_leftMenu_Field.get(userPage);
+	    assertNotNull(m_leftMenu);
+	    m_leftMenu.setCurrentSelected(1);
+	    System.out.println("result: " + m_leftMenu.getCurrentSelected());
+	    userPage.onMenuItemClicked(e);    
+	       
+	    Field m_items_Field =  userMenuCls.getDeclaredField("m_items");
+	    assertNotNull(m_items_Field);
+	    m_items_Field.setAccessible(true);
+	    @SuppressWarnings("unchecked")
+		List<UserMenuItem> m_items =(List<UserMenuItem>) m_items_Field.get(m_leftMenu);
+	    assertNotNull(m_items);
+
+	    UserMenuItem userMenuItem3 = new UserMenuItem(m_leftMenu, "favorites", 10, 10, null, null);
+	    m_items.add(3, userMenuItem3);
+	    UserMenuItem userMenuItem4 = new UserMenuItem(m_leftMenu, "lists", 10, 10, null, null);
+	    m_items.add(4, userMenuItem4);
+	    
+	    // ------------------------------------------------------------------------------------------
+		
+	    //test onNumberItemClicked event
+	    NumberBarItem item = new NumberBarItem(shell, 0, "favorites", 10, 10, null, null, null, null, null); 
+	    event = new Event();
+	    event.widget = item;	    	
+	    e = new MouseEvent(event);
+	    userPage.onNumberItemClicked(e);
+	    
+	    NumberBarItem item_lists = new NumberBarItem(shell, 0, "lists", 10, 10, null, null, null, null, null); 
+	    event = new Event();
+	    event.widget = item_lists;	    	
+	    e = new MouseEvent(event);
+	    userPage.onNumberItemClicked(e);
+	    
+	    //test showNewItemList event
+	    userPage = new UserPage(shell, user,"", 10, 1, 1000, 1000, 1000, 1000, null, null);
+	    assertNotNull(userPage);	    
+	    
+	    Method showNewItemList = userPageCls.getDeclaredMethod("showNewItemList", new Class[]{ String.class});
+	    assertNotNull(showNewItemList);
+	 
+	    showNewItemList.setAccessible(true);
+	    
+	    showNewItemList.invoke(userPage,new Object[]{ "following"});
+	    showNewItemList.invoke(userPage,new Object[]{ "followers"});
+	    //showNewItemList.invoke(userPage,new Object[]{ "favorites"});
+	    //showNewItemList.invoke(userPage,new Object[]{ "lists"});
+	    showNewItemList.invoke(userPage,new Object[]{ "unknown"});
+	    
+	    //test tweetsListBackClicked event
+	    event = new Event();
+	    event.widget = shell;
+	    e = new MouseEvent(event);
+	    userPage.tweetsListBackClicked(e);
+	    
+	    //test tweetsListNextClicked event
+	    event = new Event();
+	    event.widget = shell;
+	    e = new MouseEvent(event);
+	    userPage.tweetsListNextClicked(e);
+	    
+	    //test followingListBackClicked event
+	    event = new Event();
+	    event.widget = shell;
+	    e = new MouseEvent(event);
+	    PagableResponseList<User> following = new MockPagableResponseList<User>(-1);
+	    following.add(user);
+	    userPage.showFollowingList(following);
+	    userPage.followingListBackClicked(e);
+	    
+	    //test followingListNextClicked event
+	    event = new Event();
+	    event.widget = shell;
+	    e = new MouseEvent(event);
+	    userPage.followingListNextClicked(e);
+	    
+	    //test followersListBackClicked event
+	    event = new Event();
+	    event.widget = shell;
+	    e = new MouseEvent(event);
+	    PagableResponseList<User> followers = new MockPagableResponseList<User>(-1);
+	    followers.add(user);
+	    userPage.showFollowersList(followers);
+	    userPage.followersListBackClicked(e);
+	    
+	    //test followersListNextClicked event
+	    event = new Event();
+	    event.widget = shell;
+	    e = new MouseEvent(event);
+	    userPage.followersListNextClicked(e);
+	    
+	    
+	    //test onMenuItemClicked event
+	    event = new Event();
+	    event.widget = shell;
+	    e = new MouseEvent(event);
+	    
+	    // m_leftMenu.getCurrentSelected() == 0 
+	    m_leftMenu.setCurrentSelected(0); 
+	    userPage.onMenuItemClicked(e);
+//	    // m_leftMenu.getCurrentSelected() == 1 
+//	    m_leftMenu.setCurrentSelected(-1);
+//	    userPage.onMenuItemClicked(e);
+	    
+	    //test onNumberItemClicked
+	    event = new Event();
+	    e.widget = new Button(item,0);
+	    userPage.onNumberItemClicked(e);
+	    
+    }catch(Exception e){
+    	assertNull( e.getMessage() );
+    }
+   
+    shell.dispose();
+    display.dispose();
+
+  }
+}
+

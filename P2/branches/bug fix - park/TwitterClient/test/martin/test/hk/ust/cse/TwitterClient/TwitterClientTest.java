@@ -1,0 +1,50 @@
+package martin.test.hk.ust.cse.TwitterClient;
+
+import org.junit.Test;
+import twitter4j.TwitterException;
+
+import static org.junit.Assert.*;
+import hk.ust.cse.TwitterClient.TwitterClient;
+
+public class TwitterClientTest {
+
+	@Test(timeout=100000)
+	public void testconstructor() throws Throwable{
+		
+		Thread th = new Thread(new Runnable(){
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				try {
+					TwitterClient tc = new TwitterClient(1200, 700);
+				} catch (TwitterException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					assertNull(e.getMessage());
+				}
+			}
+			
+		});
+		th.start();
+		//th.setDaemon(true);
+		th.join(3000);
+		
+		Class<?> cls = TwitterClient.class;
+//		Constructor<?> c = cls.getDeclaredConstructors()[0];
+//		assertNotNull(c);
+//		 	 
+//		Method checkSWTLibrary = cls.getDeclaredMethod("checkSWTLibrary");
+//		checkSWTLibrary.setAccessible(true);
+//		assertNotNull(checkSWTLibrary);
+//		checkSWTLibrary.invoke(new Object[]{null});
+//		
+//		Method checkTwitterOAuth = cls.getDeclaredMethod("checkTwitterOAuth");
+//		checkTwitterOAuth.setAccessible(true);
+//		assertNotNull(checkTwitterOAuth);
+//		checkTwitterOAuth.invoke(new Object[]{null});
+//				
+	}
+	
+	
+}

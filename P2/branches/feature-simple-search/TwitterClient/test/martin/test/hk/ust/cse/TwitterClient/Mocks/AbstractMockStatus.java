@@ -1,0 +1,8 @@
+package martin.test.hk.ust.cse.TwitterClient.Mocks;
+
+import twitter4j.Status;
+
+public abstract class AbstractMockStatus implements Status{
+
+}
+
